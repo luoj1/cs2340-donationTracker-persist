@@ -16,17 +16,29 @@ func add_location(db *sql.DB) http.HandlerFunc {
             }else{
                 w.Write([]byte("0"))
             }
-        email := r.URL.Query().Get("email")
-        name := r.URL.Query().Get("name")
-        latitude := r.URL.Query().Get("latitude")
-        longitude := r.URL.Query().Get("longitude")
-        street_addr := r.URL.Query().Get("street_addr")
-        city := r.URL.Query().Get("city")
-        st :=r.URL.Query().Get("state")
-        zip := r.URL.Query().Get("zip")
-        t := r.URL.Query().Get("type")
-        phone := r.URL.Query().Get("phone")
-        website := r.URL.Query().Get("website")
+            m := post_request_resolver(db , r)
+            email := m["email"][0]
+            name := m["name"][0]
+            latitude := m["latitude"][0]
+            longitude := m["longitude"][0]
+            street_addr := m["street_addr"][0]
+            city := m["city"][0]
+            st := m["st"][0]
+            zip := m["zip"][0]
+            t := m["t"][0]
+            phone := m["phone"][0]
+            website := m["website"][0]
+        //email := r.URL.Query().Get("email")
+        //name := r.URL.Query().Get("name")
+        //latitude := r.URL.Query().Get("latitude")
+        //longitude := r.URL.Query().Get("longitude")
+        //street_addr := r.URL.Query().Get("street_addr")
+        //city := r.URL.Query().Get("city")
+        //st :=r.URL.Query().Get("state")
+        //zip := r.URL.Query().Get("zip")
+        //t := r.URL.Query().Get("type")
+        //phone := r.URL.Query().Get("phone")
+        //website := r.URL.Query().Get("website")
         val, err := db.Query(`insert into locations (
             ID_EMAIL
             ,NAME
