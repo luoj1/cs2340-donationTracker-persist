@@ -235,6 +235,17 @@ func buildServer(db *sql.DB) {
         PHONE VARCHAR(255),
         WEBSITE VARCHAR(255)
     );
+
+    CREATE TABLE IF NOT EXISTS items (
+        KEY SERIAL PRIMARY KEY,
+        LOCATION VARCHAR(255),
+        TIMESTAMP VARCHAR(255),
+        NAME VARCHAR(255),
+        FULLDESCRIPTION VARCHAR(255),
+        VALUE VARCHAR(255),
+        CATEGORY VARCHAR(255),
+    );
+    
     CREATE TABLE IF NOT EXISTS sessions (
         KEY SERIAL PRIMARY KEY,
         ID_EMAIL VARCHAR(255),
