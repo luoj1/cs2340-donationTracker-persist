@@ -152,12 +152,20 @@ func add_items(db *sql.DB ) http.HandlerFunc{
             }else{
                 w.Write([]byte("0"))
             }
-        location := r.URL.Query().Get("location")
-        timestamp := r.URL.Query().Get("timestamp")
-        name := r.URL.Query().Get("name")
-        fulldescription := r.URL.Query().Get("fulldescription")
-        value := r.URL.Query().Get("value")
-        category := r.URL.Query().Get("category")
+            m := post_request_resolver(db , r)
+            location := m["location"][0]
+            timestamp := m["timestamp"][0]
+            name := m["name"][0]
+            fulldescription := m["fulldescription"][0]
+            value := m["value"][0]
+            category := m["category"][0]
+
+        //location := r.URL.Query().Get("location")
+        //timestamp := r.URL.Query().Get("timestamp")
+        //name := r.URL.Query().Get("name")
+        //fulldescription := r.URL.Query().Get("fulldescription")
+        //value := r.URL.Query().Get("value")
+        //category := r.URL.Query().Get("category")
         val, err := db.Query(`insert into items (
             LOCATION
             ,TIMESTAMP
