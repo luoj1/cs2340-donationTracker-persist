@@ -3,18 +3,25 @@ import (
 	"database/sql"
     _ "github.com/lib/pq"
 	"fmt"
-	"log"
+	//"log"
+	"encoding/hex"
     "net/http"
-    "golang.org/x/crypto/bcrypt"
     "net/url"
     "io/ioutil"
+    "crypto/md5"
     )
+func md5_gen(text string) string {
+    algorithm := md5.New()
+    algorithm.Write([]byte(text))
+    return hex.EncodeToString(algorithm.Sum(nil))
+}
 func check_uid(db *sql.DB, user string, pw string) bool{
-	pw_md5 , err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.MinCost)
-        if err != nil {
-            log.Println(err)
-        }
-    val, err := db.Query("select * where ID_EMAIL=$1 and PW=$2",user, string(pw_md5))
+
+	pw_md5 := md5_gen(pw)
+        
+    fmt.Println(string(pw_md5))
+    fmt.Println(user)
+    val, err := db.Query("select * from users where ID_EMAIL=$1 and PW=$2",user, string(pw_md5))
         if err == nil && val.Next() {
             return true
         }else{

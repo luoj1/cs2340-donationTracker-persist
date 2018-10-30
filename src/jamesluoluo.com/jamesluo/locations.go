@@ -3,7 +3,7 @@ package main
 import (
     "database/sql"
     _ "github.com/lib/pq"
-    //"fmt"
+    "fmt"
     "log"
     "net/http"
     "encoding/json"
@@ -52,69 +52,79 @@ func add_location(db *sql.DB) http.HandlerFunc {
     }
     return http.HandlerFunc(fn)
 }
+
+
 type Location struct {
-    latitude string 
-    longitude string
-    street_addr string 
-    city string
-    state string
-    zip string
+    NAME string `json:"name"`
+    LATITUDE string `json:"latitude"`
+    LONGITUDE string`json:"longitude"`
+    STREET_ADDR string `json:"street_addr"`
+    CITY string`json:"city"`
+    STATE string`json:"state"`
+    ZIP string`json:"zip"`
     TYPE string`json:"type"`
-    phone string
-    website string
+    PHONE string`json:"phone"`
+    WEBSITE string`json:"website"`
 
 }
+type Locations []Location
+
 func get_locations(db *sql.DB)  http.HandlerFunc {
     fn := func(w http.ResponseWriter, r *http.Request) {
         m := post_request_resolver(db , r)
         user := m["username"][0]
         pw := m["pw"][0]
+        fmt.Println("pw in locations"+pw)
         if !check_uid(db, user, pw ) {
             w.Write([]byte("0"))
             return
         }
         
-        val, err := db.Query("select LATITUDE, LONGITUDE, STREET_ADDR, CITY, STATE, ZIP, TYPE, PHONE, WEBSITE from locations")
+        val, err := db.Query("select NAME, LATITUDE, LONGITUDE, STREET_ADDR, CITY, STATE, ZIP, TYPE, PHONE, WEBSITE from locations")
         //verify first
         var (
-            latitude string 
-            longitude string
-            street_addr string 
-            city string
-            state string
-            zip string
+            NAME string
+            LATITUDE string 
+            LONGITUDE string
+            STREET_ADDR string 
+            CITY string
+            STATE string
+            ZIP string
             TYPE string
-            phone string
-            website string
-            out *Location
+            PHONE string
+            WEBSITE string
+            //out *Location
         )
+        var loc_list Locations 
         for val.Next() {
-            err := val.Scan(&latitude,&longitude,&street_addr,&city,&state,&zip,&TYPE,&phone, &website)
+            err := val.Scan(&NAME,&LATITUDE,&LONGITUDE,&STREET_ADDR,&CITY,&STATE,&ZIP,&TYPE,&PHONE, &WEBSITE)
             if err != nil {
                 log.Fatal(err)
             }
-            out = &Location{
-                latitude:latitude,
-                 longitude:longitude,
-                street_addr:street_addr,
+            out := &Location{
+                NAME:NAME,
+                LATITUDE:LATITUDE,
+                LONGITUDE:LONGITUDE,
+                STREET_ADDR:STREET_ADDR,
                 TYPE: TYPE,
-                city:city,
-                state:state,
-                zip:zip,
-                phone: phone,
-                website:website,
-
+                CITY:CITY,
+                STATE:STATE,
+                ZIP:ZIP,
+                PHONE: PHONE,
+                WEBSITE: WEBSITE,
             }
             
-            break
+            loc_list = append(loc_list, *out)
+            
         }
 
         defer val.Close()
-        if err == nil && val != nil {
+        if err == nil {
             w.Header().Set("Content-Type", "application/json")
-            send , _ := json.Marshal(out)
+            send , _ := json.Marshal(loc_list)
             w.Write(send)
         }else{
+            panic(err)
             w.Write([]byte("0"))
         }
 

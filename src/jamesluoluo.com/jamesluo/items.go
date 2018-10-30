@@ -13,6 +13,7 @@ import (
 func searchByCategory(db *sql.DB) http.HandlerFunc{
     fn := func(w http.ResponseWriter, r *http.Request) {
         cat := r.URL.Query().Get("category")
+        "location"
         username := r.URL.Query().Get("username")
         uid := r.URL.Query().Get("uid")
         //query
@@ -59,4 +60,5 @@ func set_items(db *sql.DB ) http.HandlerFunc{
     }
     return http.HandlerFunc(fn)
 }
+func create_item
 */

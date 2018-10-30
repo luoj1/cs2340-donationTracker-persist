@@ -42,9 +42,7 @@ import (
     "encoding/csv"
     //"encoding/json"
     "os"
-    "golang.org/x/crypto/bcrypt"
-    //"io/ioutil"
-    //"net/url"
+    
     
 )
 
@@ -133,10 +131,9 @@ func create_user(db *sql.DB) http.HandlerFunc {
         email := m["email"][0]
         pw := m["pw"][0]
         //pw_md5 :=  md5.Sum([]byte(pw))
-        pw_md5 , err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.MinCost)
-        if err != nil {
-            log.Println(err)
-        }
+        fmt.Println("created uid"+pw)
+        pw_md5 := md5_gen(pw)
+        
         fmt.Println(string(pw_md5))
         u_t := m["user_type"][0]
 
@@ -152,7 +149,7 @@ func create_user(db *sql.DB) http.HandlerFunc {
             return 
         }
 
-        _, err = db.Query("insert into users (ID_EMAIL, USERNAME, PW, USER_TYPE, ACCOUNT_STATE) VALUES ($1, $2, $3, $4, $5)", email,user, string(pw_md5), u_t, 1)
+        _, err := db.Query("insert into users (ID_EMAIL, USERNAME, PW, USER_TYPE, ACCOUNT_STATE) VALUES ($1, $2, $3, $4, $5)", email,user, string(pw_md5), u_t, 1)
         fmt.Println("finish write")
         if err == nil {
             fmt.Println("1")
