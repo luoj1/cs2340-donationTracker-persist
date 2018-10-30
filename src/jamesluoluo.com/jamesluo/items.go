@@ -19,8 +19,10 @@ func searchByCategory(db *sql.DB) http.HandlerFunc{
             w.Write([]byte("0"))
             return
         }
+        m := post_request_resolver(db , r)
+        cat := m["category"][0]
         //query
-        val, err := db.Query("SELECT DISTINCT category FROM items")
+        val, err := db.Query(`SELECT * FROM items WHERE CATEGORY=$1`, cat)
         var (
             category string
             out *Item
@@ -60,8 +62,10 @@ func searchByName(db *sql.DB ) http.HandlerFunc{
             w.Write([]byte("0"))
             return
         }
+        m := post_request_resolver(db , r)
+        nam := m["name"][0]
         //query
-        val, err := db.Query("SELECT DISTINCT name FROM items")
+        val, err := db.Query(`SELECT * FROM items WHERE NAME=$1`, nam)
         var (
             item_name string
             out *Item
