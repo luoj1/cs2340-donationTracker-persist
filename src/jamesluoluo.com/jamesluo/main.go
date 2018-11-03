@@ -32,10 +32,10 @@
 package main
 
 import (
-	"database/sql"
+    "database/sql"
     _ "github.com/lib/pq"
-	"fmt"
-	"log"
+    "fmt"
+    "log"
     "net/http"
     "crypto/md5"
     "math/rand"
@@ -50,7 +50,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusInternalServerError)
     w.Write([]byte(`
         in shenshaohua we trust
-
                         ::
                       :;J7, :,                        ::;7:
                       ,ivYi, ,                       ;LLLFS:
@@ -84,22 +83,20 @@ func handler(w http.ResponseWriter, r *http.Request) {
            ,,,     ,,:,::::::i:iiiii:i::::,, ::::iiiir@xingjief.r;7:i,
         , , ,,,:,,::::::::iiiiiiiiii:,:,:::::::::iiir;ri7vL77rrirri::
          :,, , ::::::::i:::i:::i:i::,,,,,:,::i:i:::iir;@Secbone.ii:::
-
-
         `))
 }
 
 func verify_handler(db *sql.DB) http.HandlerFunc {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+    fn := func(w http.ResponseWriter, r *http.Request) {
         user := r.URL.Query().Get("user")
         uid := r.URL.Query().Get("uid")
         val, err := db.Query("select * where ID_EMAIL=$1 and PW=$2",user, md5.Sum([]byte(uid)))
         if err == nil && val.Next() {
             rand := random(250)
             db.Query("insert into sessions (ID_EMAIL, SESSION) values ($1, $2)",user, rand)
-        	w.Write([]byte(rand))
+            w.Write([]byte(rand))
         }else{
-        	w.Write([]byte("0"))
+            w.Write([]byte("0"))
         }
 
     }
@@ -181,17 +178,26 @@ func edit_property(db *sql.DB) http.HandlerFunc {
 }
 
 
-func get_user_type(db *sql.DB,  email string) string {
-    var u_t string = ""
-    val, err := db.Query("select USER_TYPE from users where ID_EMAIL=$1", email)
-    //verify first
-    if err == nil && val != nil {
-        val.Next()
-        val.Scan(&u_t)
-        return u_t
-    }else{
-        return ""
+func get_user_type(db *sql.DB) http.HandlerFunc {
+    fn := func(w http.ResponseWriter, r *http.Request) {
+        m := post_request_resolver(db , r)
+        user := m["username"][0]
+        fmt.Println("user_type check " + user)
+        //pw := m["pw"][0]
+        var USER_TYPE string
+        val, err := db.Query("select USER_TYPE from users where ID_EMAIL='"+user+"'")
+        //verify first
+        if err == nil{
+            val.Next()
+            val.Scan(&USER_TYPE)
+            fmt.Println("out usertype" + USER_TYPE)
+            w.Write([]byte(USER_TYPE))
+        }else{
+            panic(err)
+            w.Write([]byte("0"))
+        }
     }
+return http.HandlerFunc(fn)
 }
 func session_check(db *sql.DB,  sess string) string {
     var id_email string = ""
@@ -217,7 +223,15 @@ func buildServer(db *sql.DB) {
         ACCOUNT_STATE INTEGER,
         CONTACT_INFO VARCHAR(255)
     );
-    
+    CREATE TABLE IF NOT EXISTS items (
+        KEY SERIAL PRIMARY KEY,
+        LOCATION VARCHAR(255),
+        TIMESTAMP VARCHAR(255),
+        NAME VARCHAR(255),
+        FULLDESCRIPTION VARCHAR(255),
+        VALUE VARCHAR(255),
+        CATEGORY VARCHAR(255)
+    );
     CREATE TABLE IF NOT EXISTS locations (
         KEY SERIAL PRIMARY KEY,
         ID_EMAIL VARCHAR(255),
@@ -298,12 +312,12 @@ func locationsIniter(path string, db *sql.DB) {
 
 }
 func main() {
-	fmt.Println("start")
-	connStr := "user=jamesluo dbname=cs2340 port=5432 host=localhost sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
+    fmt.Println("start")
+    connStr := "user=jamesluo dbname=cs2340 port=5432 host=localhost sslmode=disable"
+    db, err := sql.Open("postgres", connStr)
+    if err != nil {
+        log.Fatal(err)
+    }
 
     fmt.Println("server initialized!")
     buildServer(db)
@@ -313,7 +327,15 @@ func main() {
     http.HandleFunc("/verify", verify_handler(db))
     http.HandleFunc("/register", create_user(db))
     http.HandleFunc("/getLocation", get_locations(db))
+    http.HandleFunc("/userType", get_user_type(db))
+    http.HandleFunc("/addItem", add_item(db))
     http.HandleFunc("/editLocation", add_location(db))
+    http.HandleFunc("/searchItemByCategory", searchByCategory(db))
+    http.HandleFunc("/searchItemByCategoryLoc", searchByCategory_loc(db))
+    http.HandleFunc("/searchItemByName", searchByName(db))
+    http.HandleFunc("/searchItemByNameLoc", searchByName_loc(db))
+    http.HandleFunc("/getItems", get_items(db))
+
     //http.HandleFunc("/add", add_handler)
     //http.HandleFunc("/contain", contain_handler)
     log.Fatal(http.ListenAndServe(":8080", nil))
